@@ -33,7 +33,7 @@ public class JwtUtil {
     private long jwtExpirationMs;
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret); // Jwt tokens are signed with a secret key to prevent tampering.
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -43,11 +43,11 @@ public class JwtUtil {
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
-                .subject(username)
-                .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(getSigningKey(), Jwts.SIG.HS256)
-                .compact();
+                .subject(username) // who the token is for
+                .issuedAt(now) // When it was created
+                .expiration(expiryDate) //When it expires
+                .signWith(getSigningKey(), Jwts.SIG.HS256) // sign with secret
+                .compact(); //Build the string
     }
 
     public String extractUsername(String token) {
@@ -63,12 +63,12 @@ public class JwtUtil {
         }
     }
 
-    private Claims parseClaims(String token) {
+    private Claims parseClaims(String token) { // Decode and verify
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(getSigningKey())  // Verify signature with secret key
                 .build()
                 .parseSignedClaims(token)
-                .getPayload();
+                .getPayload(); // Returns the claims (payload data)
     }
 
     private boolean isTokenExpired(Claims claims) {
